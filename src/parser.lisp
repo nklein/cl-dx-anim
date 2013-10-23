@@ -18,6 +18,22 @@
 (defmacro dbg ((fmt &rest fmt-args) &body body)
   `(progn (format *debug-io* ,fmt ,@fmt-args) ,@body))
 
+(defmacro zero-or-more ((type) &body body)
+  (let ((var (expand-var type))
+        (vals (gensym "VALS-"))
+        (pos (gensym "POS-"))
+        (one  (gensym "ONE-")))
+    `(let ((,(first var)
+            (loop :with ,vals = nil
+                  :do (let ((,pos (file-position *standard-input*)))
+                        (handler-case (let ((,one ,(second var)))
+                                        (push ,one ,vals))
+                          (error ()
+                            (file-position *standard-input* ,pos)
+                            (return (nreverse ,vals))))))))
+       (declare (ignorable ,(first var)))
+       ,@body)))
+
 (defmacro array-of ((type count &optional separator) &body body)
   (let ((var (expand-var type))
         (sep (and separator (expand-var separator)))
