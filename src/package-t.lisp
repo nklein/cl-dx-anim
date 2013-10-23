@@ -39,6 +39,19 @@
     '("DX-VERSION-MAJOR"
       "DX-VERSION-MINOR"))
 
+  (nst:def-test exports-dx-vertex-accessors (:each :dx-anim-func)
+    '("DX-VERTEX-X"
+      "DX-VERTEX-Y"
+      "DX-VERTEX-Z"))
+
+  (nst:def-test exports-dx-mesh-accessors (:each :dx-anim-func)
+    '("DX-MESH-VERTEXES"
+      "DX-MESH-FACES"
+      "DX-MESH-NORMALS"
+      "DX-MESH-FACE-NORMALS"
+      "DX-MESH-MATERIALS"
+      "DX-MESH-FACE-MATERIALS"))
+
   (nst:def-test exports-dx-frame-accessors (:each :dx-anim-func)
     '("DX-FRAME-NAME"
       "DX-FRAME-TRANSFORM"

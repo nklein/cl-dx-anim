@@ -10,7 +10,11 @@
    (:module "src"
     :components ((:file "package")
                  (:file "version" :depends-on ("package"))
-                 (:file "frame" :depends-on ("package"))
+                 (:file "vertex" :depends-on ("package"))
+                 (:file "mesh" :depends-on ("package"
+                                            "vertex"))
+                 (:file "frame" :depends-on ("package"
+                                             "mesh"))
                  (:file "anim-set" :depends-on ("package"))
                  (:file "dx" :depends-on ("package"
                                           "version"

@@ -8,7 +8,7 @@
   (etypecase var
    (list
     (case (first var)
-      ((optional zero-or-more one-or-more seq)
+      ((optional zero-or-more one-or-more array-of seq dbg)
        `(,*ignored-value* (,(first var) (,@(rest var)) ,(second var))))
       (t
        `(,(first var) ,(second (expand-var (second var)))))))

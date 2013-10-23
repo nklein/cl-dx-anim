@@ -8,6 +8,15 @@
            :dx-frame
            :dx-anim-rate
            :dx-anim-set)
+  (:export :dx-vertex-x
+           :dx-vertex-y
+           :dx-vertex-z)
+  (:export :dx-mesh-vertexes
+           :dx-mesh-faces
+           :dx-mesh-normals
+           :dx-mesh-face-normals
+           :dx-mesh-materials
+           :dx-mesh-face-materials)
   (:export :dx-frame-name
            :dx-frame-transform
            :dx-frame-subframes
