@@ -1,5 +1,10 @@
 (in-package :cl-dx-anim-tests)
 
+" // foo
+  // bar
+  }
+"
+
 (defconstant +sample-dx-file+ "xof 0303txt 0032
 
 template XSkinMeshHeader {

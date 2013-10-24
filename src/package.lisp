@@ -11,6 +11,9 @@
   (:export :dx-vertex-x
            :dx-vertex-y
            :dx-vertex-z)
+  (:export :dx-skin-weights-name
+           :dx-skin-weights-vertex-indexes
+           :dx-skin-weights-weights)
   (:export :dx-mesh-vertexes
            :dx-mesh-faces
            :dx-mesh-normals

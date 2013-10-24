@@ -10,9 +10,14 @@
    (:module "src"
     :components ((:file "package")
                  (:file "version" :depends-on ("package"))
+                 (:file "index-array" :depends-on ("package"))
                  (:file "vertex" :depends-on ("package"))
+                 (:file "skin-weights" :depends-on ("package"
+                                                    "index-array"))
                  (:file "mesh" :depends-on ("package"
-                                            "vertex"))
+                                            "index-array"
+                                            "vertex"
+                                            "skin-weights"))
                  (:file "frame" :depends-on ("package"
                                              "mesh"))
                  (:file "anim-set" :depends-on ("package"))

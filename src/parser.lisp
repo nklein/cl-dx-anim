@@ -39,10 +39,9 @@
         (sep (and separator (expand-var separator)))
         (first (gensym "FIRST-")))
     `(let ((,(first var)
-            (loop :for ,first = t :then nil
+            (loop ,@(when sep `(:for ,first = t :then nil))
                :repeat ,count
-               ,@(when sep
-                   `(:unless ,first :do ,(second sep)))
+               ,@(when sep `(:unless ,first :do ,(second sep)))
                :collecting ,(second var))))
        (declare (ignorable ,(first var)))
        ,@body)))

@@ -52,6 +52,11 @@
       "DX-MESH-MATERIALS"
       "DX-MESH-FACE-MATERIALS"))
 
+  (nst:def-test exports-dx-skin-weights-accessors (:each :dx-anim-func)
+    '("DX-SKIN-WEIGHTS-NAME"
+      "DX-SKIN-WEIGHTS-VERTEX-INDEXES"
+      "DX-SKIN-WEIGHTS-WEIGHTS"))
+
   (nst:def-test exports-dx-frame-accessors (:each :dx-anim-func)
     '("DX-FRAME-NAME"
       "DX-FRAME-TRANSFORM"

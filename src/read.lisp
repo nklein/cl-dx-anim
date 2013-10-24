@@ -1,10 +1,36 @@
 
 (in-package :cl-dx-anim)
 
-(defparser space-number (seq (zero-or-more whitespace) number)
+(defun read-comment-body (&optional (*standard-input* *standard-input*))
+  (loop :for in = (read-char)
+        :until (or (char= in #\Newline) (char= in #\Return))
+        :collecting in))
+
+(defparser comment (seq "//" comment-body
+                        #+not (dbg "COMMENT: ~A~%" comment-body))
+  comment-body)
+
+(defparser whitespace-char (seq char)
+  (assert (member char '(#\Space #\Newline #\Return #\Tab #\Page)))
+  char)
+
+(defparser non-whitespace-non-quote (seq char)
+  (assert (not (member char '(#\Space #\Newline #\Return #\Tab #\Page
+                              #\"))))
+  char)
+
+(defparser whitespace-hunk (seq (ch (optional whitespace-char))
+                                (cm (optional comment)))
+  (unless (or ch cm)
+    (error 'empty-whitespace-hunk)))
+
+(defparser whitespace (seq (zero-or-more whitespace-hunk))
+  :whitespace)
+
+(defparser space-number (seq whitespace number)
   number)
 
-(defparser space-float (seq (zero-or-more whitespace) float)
+(defparser space-float (seq whitespace float)
   float)
 
 (defparser two-digit-number (seq (a digit) (b digit))
@@ -22,23 +48,6 @@
 
 (defparser float-size (seq four-digit-number) four-digit-number)
 
-(defun read-comment-body (&optional (*standard-input* *standard-input*))
-  (loop :for in = (read-char)
-        :until (or (char= in #\Newline) (char= in #\Return))
-        :collecting in))
-
-(defparser comment (seq "//" comment-body)
-  comment-body)
-
-(defparser whitespace (seq char (optional comment))
-  (assert (member char '(#\Space #\Newline #\Return #\Tab #\Page)))
-  char)
-
-(defparser non-whitespace-non-quote (seq char)
-  (assert (not (member char '(#\Space #\Newline #\Return #\Tab #\Page
-                              #\"))))
-  char)
-
 (defun read-template-body (&optional (*standard-input* *standard-input*))
   (loop :for in = (read-char)
         :collecting in
@@ -47,9 +56,9 @@
 (defparser name (one-or-more (token non-whitespace-non-quote))
   (intern (coerce token 'string)))
 
-(defparser template (seq (zero-or-more whitespace) "template"
-                         (zero-or-more whitespace) name
-                         (zero-or-more whitespace) template-body)
+(defparser template (seq whitespace "template"
+                         whitespace name
+                         whitespace template-body)
   :template)
 
 (defun read-mesh-material-body (&optional (*standard-input* *standard-input*))
@@ -83,90 +92,90 @@
   row)
 
 (defparser matrix (seq (matrix (array-of matrix-row 4 ",")) ";"
-                       (zero-or-more whitespace) ";")
+                       whitespace ";")
   (make-array '(4 4)
               :element-type 'single-float
               :initial-contents matrix))
 
-(defparser frame-transform (seq (zero-or-more whitespace)
+(defparser frame-transform (seq whitespace
                                 "FrameTransformMatrix"
-                                (one-or-more whitespace) "{"
+                                whitespace "{"
                                 matrix
-                                (zero-or-more whitespace) "}")
+                                whitespace "}")
   matrix)
 
-(defparser vertex (seq (zero-or-more whitespace) (x float) ";"
-                       (zero-or-more whitespace) (y float) ";"
-                       (zero-or-more whitespace) (z float) ";")
+(defparser vertex (seq whitespace (x float) ";"
+                       whitespace (y float) ";"
+                       whitespace (z float) ";")
   (make-dx-vertex x y z))
 
-(defparser vertex-array (seq (zero-or-more whitespace) (nverts number) ";"
+(defparser vertex-array (seq whitespace (nverts number) ";"
                              (verts (array-of vertex nverts ","))
-                             (zero-or-more whitespace) ";")
+                             whitespace ";")
   (make-array nverts
               :element-type 'dx-vertex
               :initial-contents verts))
 
-(defparser face (seq (zero-or-more whitespace)
+(defparser face (seq whitespace
                      (nvert-indexes number) ";"
                      (vert-array (array-of number nvert-indexes ";")) ";")
   (make-array nvert-indexes
               :element-type '(and fixnum (integer 0 *))
               :initial-contents vert-array))
 
-(defparser face-array (seq (zero-or-more whitespace) (nfaces number) ";"
+(defparser face-array (seq whitespace (nfaces number) ";"
                            (faces (array-of face nfaces ","))
-                           (zero-or-more whitespace) ";")
+                           whitespace ";")
   (make-array nfaces
               :element-type 'index-array
               :initial-contents faces))
 
-(defparser normal-array (seq (zero-or-more whitespace) (nnormals number) ";"
+(defparser normal-array (seq whitespace (nnormals number) ";"
                              (normals (array-of vertex nnormals ","))
-                             (zero-or-more whitespace) ";")
+                             whitespace ";")
   (make-array nnormals
               :element-type 'dx-vertex
               :initial-contents normals))
 
-(defparser mesh-normals (seq (one-or-more whitespace) "MeshNormals"
-                             (one-or-more whitespace) "{"
+(defparser mesh-normals (seq whitespace "MeshNormals"
+                             whitespace "{"
                              normal-array
                              face-array
-                             (zero-or-more whitespace) "}")
+                             whitespace "}")
   (list normal-array face-array))
 
-(defparser mesh-material-list (seq (one-or-more whitespace)
+(defparser mesh-material-list (seq whitespace
                                    "MeshMaterialList"
                                    mesh-material-body)
-  nil)
+  'xxx)
 
-(defparser mesh-texture-coords (seq (one-or-more whitespace)
+(defparser mesh-texture-coords (seq whitespace
                                      "MeshTextureCoords"
                                      mesh-material-body)
-  nil)
+  'xxx)
 
-(defparser x-skin-mesh-header (seq (one-or-more whitespace) "XSkinMeshHeader"
-                                   (one-or-more whitespace) "{"
-                                   (zero-or-more whitespace)
+(defparser x-skin-mesh-header (seq whitespace "XSkinMeshHeader"
+                                   whitespace "{"
+                                   whitespace
                                    (max-weights-per-vertex number) ";"
-                                   (zero-or-more whitespace)
+                                   whitespace
                                    (max-weights-per-face number) ";"
-                                   (zero-or-more whitespace)
+                                   whitespace
                                    (nbones number) ";"
-                                   (one-or-more whitespace) "}")
+                                   whitespace "}")
   (list max-weights-per-vertex max-weights-per-face nbones))
 
 
-(defparser skin-weights (seq (one-or-more whitespace) "SkinWeights"
-                             (one-or-more whitespace) "{"
-                             (zero-or-more whitespace) "\"" name "\";"
-                             (zero-or-more whitespace) (nweights number) ";"
+(defparser skin-weights (seq whitespace "SkinWeights"
+                             whitespace "{"
+                             whitespace "\"" name "\";"
+                             whitespace (nweights number) ";"
                              (vertex-indexes (array-of space-number
                                                nweights ",")) ";"
                              (vertex-weights (array-of space-float
                                                nweights ",")) ";"
                              matrix
-                             (one-or-more whitespace) "}")
+                             whitespace "}")
   (list name
         (make-array nweights
                     :element-type '(and fixnum (integer 0 *))
@@ -181,40 +190,41 @@
                                           (third x-skin-mesh-header))))
   (list* x-skin-mesh-header skin-weights))
 
-(defparser mesh (seq (zero-or-more whitespace) "Mesh"
-                     (one-or-more whitespace) "{"
+(defparser mesh (seq whitespace "Mesh"
+                     whitespace "{"
                      vertex-array
                      face-array
                      (mesh-normals (optional mesh-normals))
                      (mesh-material-list (optional mesh-material-list))
                      (mesh-texture-coords (optional mesh-texture-coords))
                      (skin-info (optional skin-info))
-                     (zero-or-more whitespace) "}")
+                     whitespace "}")
   (make-dx-mesh vertex-array
                 face-array
                 (first mesh-normals)
                 (second mesh-normals)
-                (first mesh-material-list)
-                (second mesh-material-list)))
+                (and nil 'xxx (first mesh-material-list))
+                (and nil 'xxx (second mesh-material-list))))
 
 (defparser frame-body (seq frame-transform
-                        (subframes (zero-or-more frame))
-                        (meshes (zero-or-more mesh)))
+                           (subframes (zero-or-more frame))
+                           (meshes (zero-or-more mesh)))
   (list :transform frame-transform
         :subframes subframes
         :meshes meshes))
 
-(defparser frame (seq (zero-or-more whitespace) "Frame"
-                      (one-or-more whitespace) name
-                      (one-or-more whitespace) "{"
+(defparser frame (seq whitespace "Frame"
+                      whitespace name
+                      whitespace "{"
                       frame-body
-                      (zero-or-more whitespace) "}")
+                      whitespace
+                      "}")
   (apply #'make-dx-frame :name name frame-body))
 
-(defparser anim-rate (seq (zero-or-more whitespace) "AnimTicksPerSecond"
-                          (zero-or-more whitespace) "{"
-                          (zero-or-more whitespace) number ";"
-                          (zero-or-more whitespace) "}")
+(defparser anim-rate (seq whitespace "AnimTicksPerSecond"
+                          whitespace "{"
+                          whitespace number ";"
+                          whitespace "}")
   number)
 
 (defparser optional-anim-rate (optional anim-rate)
@@ -228,8 +238,8 @@
         :when (char= in #\}) :do (decf depth)
         :until (and (zerop depth) (char= in #\}))))
 
-(defparser anim-set (seq (zero-or-more whitespace) "AnimationSet"
-                         (zero-or-more whitespace) anim-set-body)
+(defparser anim-set (seq whitespace "AnimationSet"
+                         whitespace anim-set-body)
   (make-dx-anim-set :tbd nil))
 
 (defparser dx (seq "xof " version "txt " float-size
